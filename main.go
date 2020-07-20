@@ -1,15 +1,60 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+
+	_ "github.com/lib/pq"
+)
+
+// this will need to be populated by kubernetes
+const (
+	host     = "localhost"
+	port     = 5432
+	user     = "postgres"
+	password = "password"
+	dbname   = "loans"
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello You Have Made it to the server, %s \n", r.Host)
-	})
+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err) // hmm panic TODO
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Postgres connected successfully")
+
+	http.HandleFunc("/", server)
+	http.HandleFunc("/loan", loans)
 
 	log.Fatal(http.ListenAndServe(":3030", nil))
+}
+
+func server(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello You Have Made it to the server, %s \n", r.Host)
+}
+
+func loans(w http.ResponseWriter, r *http.Request) {
+
+	// switch the cases
+	switch r.Method {
+	case "GET":
+		//get the data from the database
+		fmt.Fprintf(w, "get method")
+	case "POST":
+		//add new data
+		fmt.Fprintf(w, "post method")
+	}
+
 }
