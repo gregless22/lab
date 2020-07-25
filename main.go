@@ -5,23 +5,40 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 
 	_ "github.com/lib/pq"
 )
 
 // this will need to be populated by kubernetes
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "password"
-	dbname   = "loans"
-)
 
 func main() {
 
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	port, err := strconv.Atoi(os.Getenv("port"))
+	if err != nil {
+		port = 5432
+	}
 
+	host, exists := os.LookupEnv("host")
+	if !exists {
+		host = "localhost"
+	}
+	user, exists := os.LookupEnv("user")
+	if !exists {
+		user = "none"
+	}
+	password, exists := os.LookupEnv("password")
+	if !exists {
+		password = "default"
+	}
+	dbname, exists := os.LookupEnv("dbname")
+	if !exists {
+		dbname = "db"
+	}
+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	fmt.Println(psqlInfo)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err) // hmm panic TODO
