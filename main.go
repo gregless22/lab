@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"database/sql"
@@ -8,31 +8,30 @@ import (
 	"os"
 	"strconv"
 
+	// this is required for the database connectio
 	_ "github.com/lib/pq"
 )
 
-// this will need to be populated by kubernetes
-
 func main() {
 
-	port, err := strconv.Atoi(os.Getenv("port"))
+	port, err := strconv.Atoi(os.Getenv("POSTGRES_PORT"))
 	if err != nil {
 		port = 5432
 	}
 
-	host, exists := os.LookupEnv("host")
+	host, exists := os.LookupEnv("POSTGRES_HOST")
 	if !exists {
 		host = "localhost"
 	}
-	user, exists := os.LookupEnv("user")
+	user, exists := os.LookupEnv("POSTGRES_USER")
 	if !exists {
 		user = "none"
 	}
-	password, exists := os.LookupEnv("password")
+	password, exists := os.LookupEnv("POSTGRES_PASSWORD")
 	if !exists {
 		password = "default"
 	}
-	dbname, exists := os.LookupEnv("dbname")
+	dbname, exists := os.LookupEnv("POSTGRES_DB")
 	if !exists {
 		dbname = "db"
 	}
@@ -59,6 +58,7 @@ func main() {
 }
 
 func server(w http.ResponseWriter, r *http.Request) {
+
 	fmt.Fprintf(w, "Hello You Have Made it to the server, %s \n", r.Host)
 }
 
