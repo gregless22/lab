@@ -16,6 +16,11 @@ type response struct {
 	Message string `json:"message,omitempty"`
 }
 
+// Database interface
+type Database interface {
+	CreateUser(user models.User) int64
+}
+
 // Connect gets connection details from env variables and returns a pointer to the database
 func connect() (db *sql.DB) {
 	port, err := strconv.Atoi(os.Getenv("POSTGRES_PORT"))
