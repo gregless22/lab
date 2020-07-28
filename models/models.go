@@ -7,3 +7,13 @@ type User struct {
 	Location string `json:"location"`
 	Age      int64  `json:"age"`
 }
+
+// InitUserCommand will return the psql command to insert in to the database
+func InitUserCommand() string {
+	return `CREATE TABLE if NOT EXISTS users (
+		id SERIAL PRIMARY KEY,
+		age INT,
+		name TEXT UNIQUE NOT NULL,
+		location TEXT )
+		`
+}

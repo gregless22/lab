@@ -6,14 +6,14 @@ import (
 	"net/http"
 
 	// this is required for the database connectio
+
+	"github.com/gregless22/lab/database"
 	_ "github.com/lib/pq"
 )
 
-type server struct {
-	db *database
-}
-
 func main() {
+	// initilise the database
+	database.Init()
 
 	http.HandleFunc("/", home)
 	http.HandleFunc("/loan", loans)
@@ -22,14 +22,13 @@ func main() {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-
-	// sqlStatement := `CREATE TABLE users ( id SERIAL, age INT, first_name VARCHAR(255), last_name VARCHAR(255), email TEXT );`
-
-	// _, err := db.Exec(sqlStatement)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
+	db := database.Database{}
+	results, err := db.GetAllUsers()
+	// this is where unpacking will occur
+	if err != nil {
+		fmt.Printf("Database output %s \n", err)
+	}
+	fmt.Printf("Database output %+v \n", results)
 	fmt.Fprintf(w, "Hello You Have Made it to the server")
 }
 

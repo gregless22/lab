@@ -16,9 +16,31 @@ type response struct {
 	Message string `json:"message,omitempty"`
 }
 
-// Database interface
-type Database interface {
+// UserPersist interface
+type UserPersist interface {
 	CreateUser(user models.User) int64
+}
+
+// Database will save the data
+type Database struct {
+}
+
+// Init .. initialises the database tables
+func Init() {
+
+	// get the sql statement to intialise the table
+	sqlStatement := models.InitUserCommand()
+
+	// create the postgres db connection
+	db := connect()
+	defer db.Close()
+
+	_, err := db.Exec(sqlStatement)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
 }
 
 // Connect gets connection details from env variables and returns a pointer to the database
@@ -36,7 +58,7 @@ func connect() (db *sql.DB) {
 	}
 	user, exists := os.LookupEnv("POSTGRES_USER")
 	if !exists {
-		user = "admin"
+		user = "postgres"
 		log.Println("Error setting USER from env, default used.")
 	}
 	password, exists := os.LookupEnv("POSTGRES_PASSWORD")
@@ -53,6 +75,7 @@ func connect() (db *sql.DB) {
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 	db, err = sql.Open("postgres", psqlInfo)
+	fmt.Println(psqlInfo)
 	if err != nil {
 		log.Fatalf("Error connecting to Database %s", err)
 		return
@@ -69,7 +92,7 @@ func connect() (db *sql.DB) {
 }
 
 // CreateUser accepts a User struct and returns the ID if successfully returned
-func CreateUser(user models.User) int64 {
+func (d Database) CreateUser(user models.User) int64 {
 
 	// create the postgres db connection
 	db := connect()
@@ -97,7 +120,7 @@ func CreateUser(user models.User) int64 {
 }
 
 // GetUser returns a user and error from the database by its userid
-func GetUser(id int64) (models.User, error) {
+func (d Database) GetUser(id int64) (models.User, error) {
 	// create the postgres db connection
 	db := connect()
 	defer db.Close()
@@ -129,7 +152,7 @@ func GetUser(id int64) (models.User, error) {
 }
 
 // GetAllUsers returns all of the users from the DB
-func GetAllUsers() ([]models.User, error) {
+func (d Database) GetAllUsers() ([]models.User, error) {
 	// create the postgres db connection
 	db := connect()
 	defer db.Close()
@@ -168,7 +191,7 @@ func GetAllUsers() ([]models.User, error) {
 }
 
 // UpdateUser in the DB, the User is the first arguement adn returns the row that its been delete from
-func UpdateUser(user models.User) int64 {
+func (d Database) UpdateUser(user models.User) int64 {
 
 	// create the postgres db connection
 	db := connect()
@@ -197,7 +220,7 @@ func UpdateUser(user models.User) int64 {
 }
 
 // DeleteUser in the DB takes the user ID and returns the row it is deleted from
-func DeleteUser(id int64) int64 {
+func (d Database) DeleteUser(id int64) int64 {
 
 	// create the postgres db connection
 	db := connect()
